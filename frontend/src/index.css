@@ -1,0 +1,412 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom slick scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 10px;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(75, 85, 99, 0.5);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+/* Custom premium transitions and glass helper styles */
+.glassmorphism {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.dark .glassmorphism {
+  background: rgba(18, 24, 38, 0.45);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Shimmer animation for loading skeletons */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.dark .animate-shimmer {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Circular Theme Reveal View Transition */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Ensure the old state remains fully opaque underneath */
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 9999;
+}
+
+/* Custom floating animations for background blobs */
+@keyframes float-slow {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+}
+
+@keyframes float-reverse {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(-30px, 40px) scale(0.95);
+  }
+  66% {
+    transform: translate(40px, -20px) scale(1.1);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 12s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 15s ease-in-out infinite;
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* ==========================================================
+   PREMIUM DARK MODE THEME OVERRIDES (VIBRANT SLEEK STYLE)
+   ========================================================== */
+.dark, .dark body {
+  background-color: #0b0f19 !important;
+  color: #e2e8f0 !important;
+}
+
+/* Global Background Elements */
+.dark .bg-white,
+.dark .bg-\[\#f8f9f9\],
+.dark .bg-gray-50,
+.dark .bg-gray-50\/50,
+.dark .bg-gray-50\/30,
+.dark .bg-slate-50\/50,
+.dark .bg-neutral-50,
+.dark .bg-gray-100\/50,
+.dark aside,
+.dark nav,
+.dark main {
+  background-color: #121824 !important;
+  color: #e2e8f0 !important;
+}
+
+/* Global Border Colors */
+.dark .border,
+.dark .border-b,
+.dark .border-t,
+.dark .border-r,
+.dark .border-l,
+.dark .border-gray-100,
+.dark .border-gray-150,
+.dark .border-gray-200,
+.dark .border-gray-300,
+.dark .border-gray-305,
+.dark .border-gray-400,
+.dark .border-\[\#e3e6e8\],
+.dark .border-neutral-200,
+.dark .border-neutral-300,
+.dark .border-slate-200,
+.dark hr {
+  border-color: #1e293b !important;
+}
+
+/* Primary Text & Headings */
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5,
+.dark h6,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-neutral-900,
+.dark .text-slate-850,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-\[\#0c0d0e\],
+.dark .text-\[\#0C0D0E\],
+.dark .text-\[\#242729\],
+.dark .text-\[\#232629\] {
+  color: #f8fafc !important;
+}
+
+/* Secondary / Descriptive Text */
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-650,
+.dark .text-gray-655,
+.dark .text-neutral-600,
+.dark .text-neutral-500,
+.dark .text-slate-500,
+.dark .text-slate-600,
+.dark .text-\[\#3b4045\],
+.dark .text-\[\#3B4045\],
+.dark .text-\[\#525960\] {
+  color: #94a3b8 !important;
+}
+
+/* Hover and active states background styling */
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-50\/70:hover,
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-gray-100\/50:hover,
+.dark .hover\:bg-rose-50:hover,
+.dark .hover\:bg-\[\#e3e6e8\]:hover,
+.dark .hover\:bg-\[\#f8f9f9\]:hover,
+.dark .hover\:bg-\[\#F8F9F9\]:hover,
+.dark .bg-\[\#F1F2F3\],
+.dark .bg-gray-100,
+.dark .bg-gray-50 {
+  background-color: #1e293b !important;
+  color: #f8fafc !important;
+}
+
+.dark .hover\:bg-rose-50:hover {
+  background-color: rgba(244, 63, 94, 0.2) !important;
+  color: #f43f5e !important;
+}
+
+/* Group hover nesting overrides for ProductsDropdown icon container */
+.dark .group:hover .group-hover\:bg-white {
+  background-color: #0b0f19 !important;
+}
+
+.dark .group:hover .group-hover\:border-gray-200 {
+  border-color: #1e293b !important;
+}
+
+/* Forms, input fields, selects and options */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0b0f19 !important;
+  color: #f8fafc !important;
+  border-color: #1e293b !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #38bdf8 !important;
+  background-color: #0b0f19 !important;
+}
+
+/* Brand logo and static text fixes */
+.dark .text-black {
+  color: #f8fafc !important;
+}
+
+/* Question tag styling contrast improvements */
+.dark .bg-\[\#E1ECF4\],
+.dark .bg-\[\#e1ecf4\] {
+  background-color: #1e293b !important;
+  color: #38bdf8 !important;
+}
+
+.dark .hover\:bg-\[\#D0E3F1\]:hover,
+.dark .hover\:bg-\[\#d0e3f1\]:hover,
+.dark .hover\:bg-\[\#b3d3ea\]:hover,
+.dark .hover\:bg-\[\#B3D3EA\]:hover {
+  background-color: #334155 !important;
+}
+
+/* Modals overlays & drawers */
+.dark .bg-white\/60,
+.dark .bg-white\/90,
+.dark .bg-white {
+  background-color: #121824 !important;
+}
+
+.dark .shadow-2xl,
+.dark .shadow-xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Popular Network Question badges adjustments and generic blue tag borders/text */
+.dark .text-\[\#39739D\],
+.dark .text-\[\#39739d\] {
+  color: #38bdf8 !important;
+}
+
+.dark .border-\[\#7aa7c7\],
+.dark .border-\[\#7AA7C7\] {
+  border-color: #1e293b !important;
+}
+
+/* Yellow Containers and Highlights (Trending, FAQ, Ask/Register login prompts etc.) */
+.dark .bg-\[\#FDF7E2\],
+.dark .bg-\[\#fdf7e2\] {
+  background-color: #131924 !important;
+}
+
+.dark .bg-\[\#FBF3D5\],
+.dark .bg-\[\#fbf3d5\] {
+  background-color: #1c2333 !important;
+}
+
+.dark .hover\:bg-\[\#FBF9EE\]:hover,
+.dark .hover\:bg-\[\#fbf9ee\]:hover {
+  background-color: #1e293b !important;
+}
+
+.dark .border-\[\#E6E4C4\],
+.dark .border-\[\#e6e4c4\],
+.dark .border-\[\#B3D3EA\],
+.dark .border-\[\#b3d3ea\] {
+  border-color: #1e293b !important;
+}
+
+.dark .divide-\[\#E6E4C4\] > :not([hidden]) ~ :not([hidden]),
+.dark .divide-\[\#e6e4c4\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #1e293b !important;
+}
+
+/* QuestionDetail page author card (bg-[#EBF4FB], border-[#d6e9f8]) */
+.dark .bg-\[\#EBF4FB\],
+.dark .bg-\[\#ebf4fb\] {
+  background-color: #1a2233 !important;
+}
+
+.dark .border-\[\#d6e9f8\],
+.dark .border-\[\#D6E9F8\] {
+  border-color: #1e293b !important;
+}
+
+/* FAQ & Alert Box Custom Colors (Sky/Blue alert theme) */
+.dark .bg-sky-50 {
+  background-color: rgba(14, 165, 233, 0.1) !important;
+}
+
+.dark .border-sky-100,
+.dark .border-sky-200 {
+  border-color: rgba(14, 165, 233, 0.25) !important;
+}
+
+.dark .text-sky-750,
+.dark .text-sky-700,
+.dark .text-sky-800,
+.dark .text-sky-900 {
+  color: #38bdf8 !important;
+}
+
+/* Accepted Answer Block */
+.dark .bg-emerald-50\/30 {
+  background-color: rgba(16, 185, 129, 0.1) !important;
+}
+
+.dark .border-emerald-300 {
+  border-color: #065f46 !important;
+}
+
+/* Voted States & Orange Buttons styling */
+.dark .bg-orange-50 {
+  background-color: rgba(249, 115, 22, 0.15) !important;
+}
+
+.dark .bg-orange-100 {
+  background-color: rgba(249, 115, 22, 0.2) !important;
+}
+
+.dark .border-orange-200 {
+  border-color: rgba(249, 115, 22, 0.3) !important;
+}
+
+.dark .border-orange-400 {
+  border-color: rgba(249, 115, 22, 0.5) !important;
+}
+
+.dark .text-orange-600 {
+  color: #f97316 !important;
+}
+
+/* Answer Count Badge (With Answers) styling */
+.dark .bg-emerald-50\/50 {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+}
+
+.dark .border-emerald-600 {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.dark .text-emerald-700 {
+  color: #34d399 !important;
+}
+
+/* Inline Code block styling improvements */
+.dark code.bg-gray-100 {
+  background-color: #1e293b !important;
+  color: #f43f5e !important;
+}
+
+
