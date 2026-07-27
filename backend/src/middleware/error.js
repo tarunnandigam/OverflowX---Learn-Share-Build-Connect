@@ -5,10 +5,8 @@ const errorHandler = (err, req, res, next) => {
   let error = { ...err };
   error.message = err.message;
 
-  // Log to console for dev
-  if (process.env.NODE_ENV !== 'production') {
-    console.error(err.stack || err);
-  }
+  // Log to console for Render/server logs
+  console.error(`[Express Error] ${req.method} ${req.originalUrl}:`, err.stack || err);
 
   // Log to error.log file for inspection
   try {
