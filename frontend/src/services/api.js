@@ -2,8 +2,23 @@ import axios from 'axios';
 import { store } from '../store';
 import { logout, refreshTokenSuccess } from '../store/authSlice';
 
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    let cleaned = envUrl.trim().replace(/\/+$/, '');
+    if (!cleaned.endsWith('/api')) {
+      cleaned += '/api';
+    }
+    return cleaned;
+  }
+  if (typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.warn('[QueryDeck API Alert] VITE_API_URL is not set in Vercel/deployment settings! Falling back to localhost.');
+  }
+  return 'http://localhost:5000/api';
+};
+
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: getBaseURL(),
   headers: {
     'Content-Type': 'application/json',
   },
