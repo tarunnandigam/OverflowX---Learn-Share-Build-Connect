@@ -31,7 +31,9 @@ app.use(cors({
     const url = origin.toLowerCase();
     const isAllowed = allowedOrigins.includes(origin) ||
                       url.endsWith('.onrender.com') ||
-                      (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL);
+                      url.endsWith('.vercel.app') ||
+                      (process.env.FRONTEND_URL && origin === process.env.FRONTEND_URL) ||
+                      (process.env.FRONTEND_URL && origin.startsWith(process.env.FRONTEND_URL));
 
     if (isAllowed) {
       callback(null, true);
