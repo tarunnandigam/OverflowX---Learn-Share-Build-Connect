@@ -122,19 +122,19 @@ exports.register = async (req, res, next) => {
     // Check if username, email, or phone already exists
     const existingUsername = await User.findOne({ username });
     if (existingUsername) {
-      return res.status(400).json({ message: 'Display name is already registered' });
+      return res.status(400).json({ message: 'Display name is already registered. Please choose another display name or log in.' });
     }
 
     if (phone) {
       const existingPhone = await User.findOne({ phone });
       if (existingPhone) {
-        return res.status(400).json({ message: 'Phone number is already registered' });
+        return res.status(400).json({ message: 'Phone number is already registered. Please log in.' });
       }
     }
 
     const existingEmail = await User.findOne({ email });
     if (existingEmail) {
-      return res.status(400).json({ message: 'Email address is already registered' });
+      return res.status(400).json({ message: 'Email address is already registered. Please log in.' });
     }
 
     // Generate simple 6-digit OTPs
@@ -169,13 +169,6 @@ exports.register = async (req, res, next) => {
     if (phone) {
       sendSMS(phone, `Your OverflowX phone verification code is: ${phoneOtp}`)
         .catch(err => process.env.NODE_ENV !== 'production' && console.error('[Twilio Error] Registration SMS failed:', err));
-    } else if (process.env.NODE_ENV !== 'production') {
-      // Print OTPs to server console for testing if phone is not provided
-      console.log('\n=========================================');
-      console.log(`[DEV ONLY] OTP codes for ${username}:`);
-      console.log(`Email OTP: ${emailOtp}`);
-      console.log(`Phone OTP: ${phoneOtp}`);
-      console.log('=========================================\n');
     }
 
     // Generate tokens
@@ -219,10 +212,7 @@ exports.register = async (req, res, next) => {
       token: accessToken,
     };
 
-    if (process.env.NODE_ENV !== 'production') {
-      responseData._devEmailOtp = emailOtp;
-      responseData._devPhoneOtp = phoneOtp;
-    }
+    res.status(201).json(responseData);
 
     res.status(201).json(responseData);
   } catch (error) {
@@ -263,29 +253,7 @@ exports.login = async (req, res, next) => {
       }
     }
 
-    // Chrome OTP check (bypassed if Microsoft Edge / Microsoft browser is detected)
-    if (env.browser === 'Google Chrome') {
-      const loginOtp = generateOTP();
-      user.loginOtpCode = loginOtp;
-      user.loginOtpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
-      await user.save();
-
-      // Send login OTP email in the background to avoid blocking
-      sendLoginOTPEmail(user.email, loginOtp, user.username)
-        .catch(err => process.env.NODE_ENV !== 'production' && console.error('[Resend Error] Login OTP email failed:', err));
-
-      const responseData = {
-        requireOtp: true,
-        email: user.email,
-        message: 'OTP verification code sent to your registered email address.',
-      };
-      if (process.env.NODE_ENV !== 'production') {
-        responseData._devOtp = loginOtp;
-      }
-      return res.json(responseData);
-    }
-
-    // Other browsers / Microsoft Edge bypass: login immediately
+    // Generate tokens
     const accessToken = generateAccessToken(user._id);
     const refreshToken = generateRefreshToken(user._id);
 
@@ -530,9 +498,6 @@ exports.resendEmailCode = async (req, res, next) => {
     const responseData = {
       message: 'Verification code sent to your email',
     };
-    if (process.env.NODE_ENV !== 'production') {
-      responseData._devEmailOtp = code;
-    }
     res.json(responseData);
   } catch (error) {
     next(error);
@@ -541,7 +506,6 @@ exports.resendEmailCode = async (req, res, next) => {
 
 // @desc    Resend Phone OTP
 // @route   POST /api/auth/resend-phone
-// exports.resendPhoneCode = async (req, res, next) => {
 exports.resendPhoneCode = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
@@ -557,16 +521,11 @@ exports.resendPhoneCode = async (req, res, next) => {
     if (user.phone) {
       sendSMS(user.phone, `Your OverflowX phone verification code is: ${code}`)
         .catch(err => process.env.NODE_ENV !== 'production' && console.error('[Twilio Error] Resend SMS failed:', err));
-    } else if (process.env.NODE_ENV !== 'production') {
-      console.log(`[DEV ONLY] Resent SMS OTP: ${code}`);
     }
 
     const responseData = {
       message: 'Verification code sent via SMS',
     };
-    if (process.env.NODE_ENV !== 'production') {
-      responseData._devPhoneOtp = code;
-    }
     res.json(responseData);
   } catch (error) {
     next(error);
@@ -607,7 +566,7 @@ exports.updateVerificationContacts = async (req, res, next) => {
       }
     }
 
-    const devOtp = {};
+    const pendingOtp = {};
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
     let emailChanged = false;
 
@@ -616,7 +575,7 @@ exports.updateVerificationContacts = async (req, res, next) => {
       user.isEmailVerified = false;
       user.emailVerificationCode = generateOTP();
       user.emailVerificationExpires = expiry;
-      devOtp.emailOtp = user.emailVerificationCode;
+      pendingOtp.emailOtp = user.emailVerificationCode;
       emailChanged = true;
     }
 
@@ -625,7 +584,7 @@ exports.updateVerificationContacts = async (req, res, next) => {
       user.isPhoneVerified = false;
       user.phoneVerificationCode = generateOTP();
       user.phoneVerificationExpires = expiry;
-      devOtp.phoneOtp = user.phoneVerificationCode;
+      pendingOtp.phoneOtp = user.phoneVerificationCode;
     }
 
     await user.save();
@@ -637,17 +596,9 @@ exports.updateVerificationContacts = async (req, res, next) => {
     }
 
     // Send SMS verification OTP if phone was updated in the background
-    if (devOtp.phoneOtp) {
-      sendSMS(user.phone, `Your OverflowX phone verification code is: ${devOtp.phoneOtp}`)
+    if (pendingOtp.phoneOtp && user.phone) {
+      sendSMS(user.phone, `Your OverflowX phone verification code is: ${pendingOtp.phoneOtp}`)
         .catch(err => process.env.NODE_ENV !== 'production' && console.error('[Twilio Error] Update SMS failed:', err));
-    }
-
-    if ((devOtp.emailOtp || devOtp.phoneOtp) && process.env.NODE_ENV !== 'production') {
-      console.log('\n=========================================');
-      console.log(`[DEV ONLY] OTP codes for contact update (${user.username}):`);
-      if (devOtp.emailOtp) console.log(`Email OTP: ${devOtp.emailOtp}`);
-      if (devOtp.phoneOtp) console.log(`Phone OTP: ${devOtp.phoneOtp}`);
-      console.log('=========================================\n');
     }
 
     const responseData = {
@@ -664,10 +615,7 @@ exports.updateVerificationContacts = async (req, res, next) => {
       }
     };
 
-    if (process.env.NODE_ENV !== 'production') {
-      responseData._devEmailOtp = devOtp.emailOtp;
-      responseData._devPhoneOtp = devOtp.phoneOtp;
-    }
+    res.json(responseData);
 
     res.json(responseData);
   } catch (error) {
@@ -931,14 +879,34 @@ exports.googleLogin = async (req, res, next) => {
       return res.status(403).json({ message: 'Google email is not verified.' });
     }
 
-    // Check if user exists
-    let user = await User.findOne({ email });
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+
+    // Check if user exists by email or googleId
+    let user = await User.findOne({
+      $or: [
+        { email: normalizedEmail },
+        { googleId }
+      ]
+    });
+
+    let isExistingAccount = false;
 
     if (user) {
-      // If user exists but was registered manually, link their googleId
+      isExistingAccount = true;
+      let updated = false;
       if (!user.googleId) {
         user.googleId = googleId;
+        updated = true;
+      }
+      if (!user.isEmailVerified) {
         user.isEmailVerified = true;
+        updated = true;
+      }
+      if (picture && (!user.avatar || user.avatar === '')) {
+        user.avatar = picture;
+        updated = true;
+      }
+      if (updated) {
         await user.save();
       }
 
@@ -951,7 +919,8 @@ exports.googleLogin = async (req, res, next) => {
       const role = isFirstUser ? 'admin' : 'user';
 
       // Ensure unique username
-      let baseUsername = name.replace(/\s+/g, '').toLowerCase();
+      let baseUsername = (name || 'user').replace(/\s+/g, '').toLowerCase();
+      if (!baseUsername) baseUsername = 'user';
       let uniqueUsername = baseUsername;
       let counter = 1;
       while (await User.findOne({ username: uniqueUsername })) {
@@ -962,9 +931,9 @@ exports.googleLogin = async (req, res, next) => {
       // Create new user without password
       user = await User.create({
         username: uniqueUsername,
-        email,
+        email: normalizedEmail,
         googleId,
-        avatar: picture,
+        avatar: picture || '',
         role,
         isEmailVerified: true,
       });
@@ -980,28 +949,6 @@ exports.googleLogin = async (req, res, next) => {
           message: 'Access restricted. Mobile logins are only allowed between 10:00 AM and 1:00 PM IST.'
         });
       }
-    }
-
-    // Chrome OTP check (bypassed if Microsoft Edge / Microsoft browser is detected)
-    if (env.browser === 'Google Chrome') {
-      const loginOtp = generateOTP();
-      user.loginOtpCode = loginOtp;
-      user.loginOtpExpires = new Date(Date.now() + 15 * 60 * 1000); // 15 mins expiry
-      await user.save();
-
-      // Send login OTP email in the background to avoid blocking
-      sendLoginOTPEmail(user.email, loginOtp, user.username)
-        .catch(err => process.env.NODE_ENV !== 'production' && console.error('[Resend Error] Google Login OTP email failed:', err));
-
-      const responseData = {
-        requireOtp: true,
-        email: user.email,
-        message: 'OTP verification code sent to your registered email address.',
-      };
-      if (process.env.NODE_ENV !== 'production') {
-        responseData._devOtp = loginOtp;
-      }
-      return res.json(responseData);
     }
 
     const accessToken = generateAccessToken(user._id);
@@ -1037,11 +984,17 @@ exports.googleLogin = async (req, res, next) => {
       email: user.email,
       phone: user.phone || '',
       role: user.role,
+      reputation: user.reputation || 1,
+      savedPosts: user.savedPosts || [],
       isEmailVerified: user.isEmailVerified,
       isPhoneVerified: user.isPhoneVerified,
       language: user.language,
-      avatar: user.avatar,
+      avatar: user.avatar || '',
       token: accessToken,
+      isExistingAccount,
+      message: isExistingAccount
+        ? `Account already exists for ${user.email}. Logged in successfully!`
+        : `Welcome to OverflowX, ${user.username}!`
     });
   } catch (error) {
     console.error('Google Login Error:', error);

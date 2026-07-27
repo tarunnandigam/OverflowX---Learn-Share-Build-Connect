@@ -206,23 +206,6 @@ const Verify = () => {
       </div>
 
       <div className="w-full max-w-[316px]">
-        {/* Verification Checklist / Dev Test Help Alert */}
-        {import.meta.env.DEV && (devEmailCode || devPhoneCode) && (
-          <div className="p-4 mb-4 rounded-[5px] border border-[#7AA7C7] bg-[#E1ECF4]">
-            <h4 className="text-[11px] font-bold text-[#0074CC] uppercase tracking-widest mb-2">
-              Developer Mode OTP codes
-            </h4>
-            <div className="grid grid-cols-2 text-xs font-semibold text-[#3B4045] gap-2">
-              <div>
-                Email: <span className="text-[#0074CC] font-bold bg-white px-2 py-0.5 rounded">{devEmailCode || 'Not sent'}</span>
-              </div>
-              <div>
-                Phone: <span className="text-[#0074CC] font-bold bg-white px-2 py-0.5 rounded">{devPhoneCode || 'Not sent'}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="bg-white rounded-[7px] shadow-[0_10px_24px_rgba(0,0,0,0.05),_0_20px_48px_rgba(0,0,0,0.05),_0_1px_4px_rgba(0,0,0,0.1)] p-6 pt-5">
           
           {/* Tabs */}
