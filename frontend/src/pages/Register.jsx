@@ -46,17 +46,13 @@ const Register = () => {
           deviceType
         });
         
-        if (response.data.requireOtp) {
-          dispatch(loginFailure(null));
-          setOtpEmail(response.data.email);
-          setDevOtp(response.data._devOtp || '');
-          setShowOtpModal(true);
-          addToast(response.data.message || 'OTP Verification required.', 'info');
+        dispatch(loginSuccess(response.data));
+        if (response.data.isExistingAccount) {
+          addToast(response.data.message || `Account already exists. Welcome back, ${response.data.username}!`, 'info');
         } else {
-          dispatch(loginSuccess(response.data));
-          addToast(`Welcome, ${response.data.username}!`, 'success');
-          navigate('/');
+          addToast(`Welcome to OverflowX, ${response.data.username}!`, 'success');
         }
+        navigate('/');
       } catch (err) {
         const msg = err.response?.data?.message || 'Google Sign Up failed.';
         dispatch(loginFailure(msg));
@@ -101,17 +97,9 @@ const Register = () => {
         deviceType
       });
 
-      if (response.data.requireOtp) {
-        dispatch(loginFailure(null));
-        setOtpEmail(response.data.email);
-        setDevOtp(response.data._devOtp || '');
-        setShowOtpModal(true);
-        addToast(response.data.message || 'OTP Verification required.', 'info');
-      } else {
-        dispatch(loginSuccess(response.data));
-        addToast(`Registration successful! Welcome, ${response.data.username}.`, 'success');
-        navigate('/');
-      }
+      dispatch(loginSuccess(response.data));
+      addToast(`Registration successful! Welcome, ${response.data.username}.`, 'success');
+      navigate('/');
     } catch (err) {
       const msg = err.response?.data?.message || 'Registration failed. Please try again.';
       dispatch(loginFailure(msg));
@@ -119,83 +107,9 @@ const Register = () => {
     }
   };
 
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-    if (!otpCode || otpCode.length !== 6) {
-      addToast('Please enter a 6-digit OTP code', 'error');
-      return;
-    }
-
-    setIsVerifyingOtp(true);
-    try {
-      const deviceType = getDeviceType();
-      const response = await API.post('/auth/login/verify-otp', {
-        email: otpEmail,
-        otpCode: otpCode,
-        otp: otpCode,
-        deviceType
-      });
-
-      dispatch(loginSuccess(response.data));
-      setShowOtpModal(false);
-      addToast(`Verification successful. Welcome, ${response.data.username}!`, 'success');
-      navigate('/');
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Invalid or expired OTP.';
-      addToast(msg, 'error');
-    } finally {
-      setIsVerifyingOtp(false);
-    }
-  };
-
   return (
     <div className="min-h-[calc(100vh-50px)] bg-[#f1f2f3] flex flex-col justify-center items-center py-12 px-4 font-sans">
       
-      {/* OTP Verification Modal */}
-      {showOtpModal && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Verify Your Email</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              We sent a 6-digit OTP verification code to <strong>{otpEmail}</strong>.
-            </p>
-            {devOtp && (
-              <div className="bg-blue-50 border border-blue-200 p-3 rounded text-xs text-blue-800 mb-4">
-                <strong>Developer Assistant:</strong> Dev OTP code is <code>{devOtp}</code>
-              </div>
-            )}
-            <form onSubmit={handleVerifyOtp} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">6-Digit Verification Code</label>
-                <input
-                  type="text"
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                  placeholder="123456"
-                  className="w-full text-center tracking-[0.5em] text-lg font-mono px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex gap-2">
-                <button
-                  type="submit"
-                  disabled={isVerifyingOtp}
-                  className="flex-1 bg-[#0a95ff] hover:bg-[#0074cc] text-white font-bold py-2 rounded text-sm transition cursor-pointer"
-                >
-                  {isVerifyingOtp ? 'Verifying...' : 'Verify & Continue'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowOtpModal(false)}
-                  className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded text-sm cursor-pointer"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
 
       {/* Brand & Heading */}
       <div className="mb-6 flex flex-col items-center max-w-sm text-center">
