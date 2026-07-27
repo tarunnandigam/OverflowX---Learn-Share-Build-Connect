@@ -55,13 +55,6 @@ const PhoneVerificationModal = () => {
       addToast('OTP sent to your phone!', 'success');
       setTimer(60);
       setStep(2);
-      
-      // For dev testing, show OTP in console or toast if returned
-      if (response.data._devPhoneOtp) {
-        console.log("DEV OTP:", response.data._devPhoneOtp);
-        addToast(`[Dev Mode] OTP: ${response.data._devPhoneOtp}`, 'info');
-        setDevOtpCode(response.data._devPhoneOtp);
-      }
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to update phone number.', 'error');
     } finally {
@@ -92,13 +85,9 @@ const PhoneVerificationModal = () => {
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
-      const response = await API.post('/auth/resend-phone');
+      await API.post('/auth/resend-phone');
       addToast('SMS code resent!', 'success');
       setTimer(60);
-      if (response.data._devPhoneOtp) {
-        addToast(`[Dev Mode] OTP: ${response.data._devPhoneOtp}`, 'info');
-        setDevOtpCode(response.data._devPhoneOtp);
-      }
     } catch (err) {
       addToast(err.response?.data?.message || 'Failed to resend code', 'error');
     } finally {
@@ -130,26 +119,6 @@ const PhoneVerificationModal = () => {
               <AlertCircle className="shrink-0 text-[#F48024] mt-0.5" size={15} />
               <div>
                 Please add and verify your phone number to keep your account safe and access all features.
-              </div>
-            </div>
-          )}
-
-          {/* Dev OTP Box */}
-          {import.meta.env.DEV && step === 2 && devOtpCode && (
-            <div className="bg-[#E1ECF4] border border-[#7AA7C7] rounded-[3px] p-3 text-[12px] text-[#3B4045] mb-4">
-              <div className="text-[10px] font-bold text-[#0074CC] uppercase tracking-wider mb-1">Developer Mode Assistant</div>
-              <div className="flex justify-between items-center">
-                <span>OTP is: <strong className="font-mono text-sm text-[#242729]">{devOtpCode}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOtp(devOtpCode);
-                    addToast('Code autofilled!', 'info');
-                  }}
-                  className="text-[#0074CC] hover:underline font-semibold"
-                >
-                  Autofill
-                </button>
               </div>
             </div>
           )}
